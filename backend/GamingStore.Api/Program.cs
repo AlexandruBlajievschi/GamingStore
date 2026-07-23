@@ -1,9 +1,15 @@
 var builder = WebApplication.CreateBuilder(args);
 
 const string frontendPolicy = "Frontend";
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(connectionString));
+builder.Services.AddScoped<IGameRepository, GameRepository>();
+builder.Services.AddScoped<IGameService, GameService>();
 builder.Services.AddScoped<IHealthService, HealthService>();
 builder.Services.AddCors(options =>
 {
