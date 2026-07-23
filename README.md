@@ -29,4 +29,8 @@ The frontend reads that endpoint through Vite's `/api` proxy, so local frontend 
 - `User` - registered customer account.
 - `Seller` - registered account that can create and manage game listings.
 
+## Commit Style
+
+Project commits follow the Conventional Commits format described in `AGENTS.md`.
+
 More detailed setup, environment, and contribution instructions can be added once the first real features are chosen.
