@@ -26,7 +26,7 @@ public sealed class SellerConfiguration : IEntityTypeConfiguration<Seller>
             .IsRequired();
 
         builder.HasData(
-            new Seller
+            new
             {
                 Id = Guid.Parse("84aa2fc0-1089-47d2-8a50-82f4d6e1de5f"),
                 Name = "Northbyte Games",

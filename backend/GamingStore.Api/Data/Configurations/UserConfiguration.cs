@@ -27,7 +27,7 @@ public sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .IsRequired();
 
         builder.HasData(
-            new User
+            new
             {
                 Id = Guid.Parse("6d16f5fd-0e50-4e25-894c-5f2d5a767b7f"),
                 FirstName = "Alex",

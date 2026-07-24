@@ -84,6 +84,16 @@ Use ESLint and Prettier consistently.
 - Add or update npm scripts for `lint`, `format`, and `format:check` when setting up or migrating frontend tooling.
 - Prefer project-level configuration files so future agents and editors share the same rules.
 
+## Backend Domain Model
+
+Use entity factory methods to protect domain invariants.
+
+Entities should not be freely created with invalid state from application code. Prefer private constructors plus static `Create(...)` methods when an entity has business rules such as required names, valid email addresses, non-empty foreign keys, length limits, or non-negative prices.
+
+Keep validation that defines whether an entity can exist close to the entity. Keep workflow validation and cross-entity orchestration in services.
+
+EF Core may still need private parameterless constructors and anonymous seed objects for materialization and `HasData`. That is acceptable; normal application code should use the entity factories.
+
 ## Commit Messages
 
 Use Conventional Commits for every commit message prepared in this project.

@@ -28,7 +28,7 @@ public sealed class GameConfiguration : IEntityTypeConfiguration<Game>
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasData(
-            new Game
+            new
             {
                 Id = Guid.Parse("13a7712c-7f0b-4cb3-b9b1-09db733c4c5c"),
                 SellerId = Guid.Parse("84aa2fc0-1089-47d2-8a50-82f4d6e1de5f"),
@@ -38,7 +38,7 @@ public sealed class GameConfiguration : IEntityTypeConfiguration<Game>
                 ReleaseDate = new DateOnly(2025, 11, 14),
                 CreatedAt = new DateTime(2026, 7, 23, 10, 0, 0, DateTimeKind.Utc)
             },
-            new Game
+            new
             {
                 Id = Guid.Parse("54acfc5b-694a-42c3-a21c-98188f1cf0a6"),
                 SellerId = Guid.Parse("84aa2fc0-1089-47d2-8a50-82f4d6e1de5f"),
@@ -48,7 +48,7 @@ public sealed class GameConfiguration : IEntityTypeConfiguration<Game>
                 ReleaseDate = new DateOnly(2026, 3, 8),
                 CreatedAt = new DateTime(2026, 7, 23, 10, 0, 0, DateTimeKind.Utc)
             },
-            new Game
+            new
             {
                 Id = Guid.Parse("ab18590a-11fd-4269-9909-11aa2df97688"),
                 SellerId = Guid.Parse("84aa2fc0-1089-47d2-8a50-82f4d6e1de5f"),
