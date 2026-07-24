@@ -1,13 +1,13 @@
 # Gaming Store
 
-Gaming Store is a learning-friendly full-stack project for an online store focused on games. The backend is built with .NET and the frontend is built with React and TypeScript.
+Gaming Store is a learning-friendly full-stack project for an online store focused on games. The backend is built with .NET and the frontend is built with Next.js, React, TypeScript, and Tailwind CSS.
 
 The first version will keep the scope simple: visitors can browse the store, registered users can interact with the platform as customers, and sellers can create and manage game listings. A guest does not need to be a stored role at first; it can simply mean a visitor who is not logged in yet.
 
 ## Project Layout
 
 - `backend/` - .NET API using a simple MVC-style structure.
-- `frontend/` - React TypeScript app using Feature-Sliced Design.
+- `frontend/` - Next.js App Router frontend using React, TypeScript, Tailwind CSS, and Feature-Sliced Design.
 
 ## Current Connection
 
@@ -17,7 +17,7 @@ The backend exposes a small health endpoint at:
 GET http://localhost:5215/api/health
 ```
 
-The frontend reads that endpoint through Vite's `/api` proxy, so local frontend code can call:
+The frontend reads that endpoint through Next.js rewrites, so local frontend code can call:
 
 ```text
 /api/health
