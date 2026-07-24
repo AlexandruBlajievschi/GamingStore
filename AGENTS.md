@@ -94,6 +94,31 @@ Keep validation that defines whether an entity can exist close to the entity. Ke
 
 EF Core may still need private parameterless constructors and anonymous seed objects for materialization and `HasData`. That is acceptable; normal application code should use the entity factories.
 
+## Backend API Layers
+
+Keep controllers thin. Controllers should translate HTTP input into service calls and translate service outcomes into HTTP responses. They should not contain EF Core queries or business workflows.
+
+Services own use-case orchestration and business decisions. Services should call entity factory/update methods, coordinate repository calls, enforce cross-entity checks such as "seller exists before creating a game", and raise clear application/domain exceptions for invalid operations.
+
+Repositories own EF Core data access. Keep LINQ queries, `Include`, ordering, tracking decisions, adds, deletes, and `SaveChangesAsync` behind repository methods so services can be unit-tested without mocking `DbContext` or `DbSet`.
+
+Use centralized API exception middleware for expected service/domain exceptions. Controllers should not repeat local `try/catch` blocks for `DomainValidationException` or `ResourceNotFoundException`; they should let middleware map those exceptions to standardized ProblemDetails responses.
+
+For EF Core repositories, default read-only queries to `AsNoTracking()`. Use tracked queries only when an entity will be modified or deleted before `SaveChangesAsync`. Prefer method names that make intent clear, such as `GetByIdAsync` for read-only access and `GetTrackedByIdAsync` or `GetByIdForUpdateAsync` for mutation flows.
+
+## Backend Testing
+
+Add tests with every backend feature.
+
+- Unit tests should cover service behavior, controller success-path HTTP mapping, entity invariants, and exception middleware response mapping.
+- Unit tests should use fakes/stubs for repository abstractions instead of mocking EF Core `DbSet` query behavior.
+- Integration tests should cover real repository/database behavior with EF Core.
+- Prefer tests against the production database provider for high-risk persistence behavior. SQLite in-memory is acceptable for early isolated relational integration tests when PostgreSQL test infrastructure is not yet available.
+- Avoid EF Core's non-relational in-memory provider for repository/query tests.
+- Coverage is a signal, not the goal. Prioritize meaningful assertions for business rules, validation, service branches, controller success mapping, repository persistence behavior, and expected exception mapping.
+- Aim for very high coverage on newly implemented domain/use-case code when practical, but do not chase 100% for trivial DTOs, EF-only constructors, framework-generated code, or defensive branches that do not represent normal product behavior.
+- End-to-end tests should wait until a full user-facing feature chain exists across frontend and backend.
+
 ## Commit Messages
 
 Use Conventional Commits for every commit message prepared in this project.

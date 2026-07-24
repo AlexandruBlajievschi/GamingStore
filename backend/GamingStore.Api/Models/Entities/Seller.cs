@@ -6,6 +6,7 @@ public sealed class Seller
     private const int EmailMaxLength = 320;
     private const int DescriptionMaxLength = 1000;
 
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private Seller()
     {
     }
@@ -40,18 +41,29 @@ public sealed class Seller
         return new Seller(Guid.NewGuid(), name, email, description, DateTime.UtcNow);
     }
 
+    public void UpdateDetails(string name, string email, string? description = null)
+    {
+        name = NormalizeRequiredText(name, nameof(name), NameMaxLength);
+        email = NormalizeEmail(email, nameof(email));
+        description = NormalizeOptionalText(description, nameof(description), DescriptionMaxLength);
+
+        Name = name;
+        Email = email;
+        Description = description;
+    }
+
     private static string NormalizeRequiredText(string value, string parameterName, int maxLength)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("A required text value cannot be empty.", parameterName);
+            throw new DomainValidationException("A required text value cannot be empty.");
         }
 
         value = value.Trim();
 
         if (value.Length > maxLength)
         {
-            throw new ArgumentException($"A text value cannot be longer than {maxLength} characters.", parameterName);
+            throw new DomainValidationException($"A text value cannot be longer than {maxLength} characters.");
         }
 
         return value;
@@ -67,12 +79,12 @@ public sealed class Seller
 
             if (!string.Equals(address.Address, value, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("A seller email must be a valid email address.", parameterName);
+                throw new DomainValidationException("A seller email must be a valid email address.");
             }
         }
-        catch (FormatException exception)
+        catch (FormatException)
         {
-            throw new ArgumentException("A seller email must be a valid email address.", parameterName, exception);
+            throw new DomainValidationException("A seller email must be a valid email address.");
         }
 
         return value;
@@ -89,7 +101,7 @@ public sealed class Seller
 
         if (value.Length > maxLength)
         {
-            throw new ArgumentException($"A text value cannot be longer than {maxLength} characters.", parameterName);
+            throw new DomainValidationException($"A text value cannot be longer than {maxLength} characters.");
         }
 
         return value;

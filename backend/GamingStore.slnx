@@ -1,3 +1,7 @@
 <Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/GamingStore.Api.IntegrationTests/GamingStore.Api.IntegrationTests.csproj" />
+    <Project Path="tests/GamingStore.Api.UnitTests/GamingStore.Api.UnitTests.csproj" />
+  </Folder>
   <Project Path="GamingStore.Api/GamingStore.Api.csproj" />
 </Solution>

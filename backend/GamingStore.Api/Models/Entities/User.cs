@@ -5,6 +5,7 @@ public sealed class User
     private const int NameMaxLength = 100;
     private const int EmailMaxLength = 320;
 
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private User()
     {
     }
@@ -37,18 +38,29 @@ public sealed class User
         return new User(Guid.NewGuid(), firstName, lastName, email, DateTime.UtcNow);
     }
 
+    public void UpdateDetails(string firstName, string lastName, string email)
+    {
+        firstName = NormalizeRequiredText(firstName, nameof(firstName), NameMaxLength);
+        lastName = NormalizeRequiredText(lastName, nameof(lastName), NameMaxLength);
+        email = NormalizeEmail(email, nameof(email));
+
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+    }
+
     private static string NormalizeRequiredText(string value, string parameterName, int maxLength)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("A required text value cannot be empty.", parameterName);
+            throw new DomainValidationException("A required text value cannot be empty.");
         }
 
         value = value.Trim();
 
         if (value.Length > maxLength)
         {
-            throw new ArgumentException($"A text value cannot be longer than {maxLength} characters.", parameterName);
+            throw new DomainValidationException($"A text value cannot be longer than {maxLength} characters.");
         }
 
         return value;
@@ -64,12 +76,12 @@ public sealed class User
 
             if (!string.Equals(address.Address, value, StringComparison.OrdinalIgnoreCase))
             {
-                throw new ArgumentException("A user email must be a valid email address.", parameterName);
+                throw new DomainValidationException("A user email must be a valid email address.");
             }
         }
-        catch (FormatException exception)
+        catch (FormatException)
         {
-            throw new ArgumentException("A user email must be a valid email address.", parameterName, exception);
+            throw new DomainValidationException("A user email must be a valid email address.");
         }
 
         return value;

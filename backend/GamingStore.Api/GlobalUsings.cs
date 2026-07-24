@@ -1,4 +1,6 @@
 global using GamingStore.Api.Data;
+global using GamingStore.Api.Middleware;
+global using GamingStore.Api.Models;
 global using GamingStore.Api.Models.Entities;
 global using GamingStore.Api.Repositories;
 global using GamingStore.Api.Services;

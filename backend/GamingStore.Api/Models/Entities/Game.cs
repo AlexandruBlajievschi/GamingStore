@@ -5,6 +5,7 @@ public sealed class Game
     private const int TitleMaxLength = 200;
     private const int DescriptionMaxLength = 2000;
 
+    [System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
     private Game()
     {
     }
@@ -52,7 +53,7 @@ public sealed class Game
     {
         if (sellerId == Guid.Empty)
         {
-            throw new ArgumentException("A game must belong to a seller.", nameof(sellerId));
+            throw new DomainValidationException("A game must belong to a seller.");
         }
 
         title = NormalizeRequiredText(title, nameof(title), TitleMaxLength);
@@ -60,7 +61,7 @@ public sealed class Game
 
         if (price < 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(price), price, "A game price cannot be negative.");
+            throw new DomainValidationException("A game price cannot be negative.");
         }
 
         return new Game(
@@ -73,18 +74,38 @@ public sealed class Game
             DateTime.UtcNow);
     }
 
+    public void UpdateDetails(
+        string title,
+        string? description,
+        decimal price,
+        DateOnly? releaseDate = null)
+    {
+        title = NormalizeRequiredText(title, nameof(title), TitleMaxLength);
+        description = NormalizeOptionalText(description, nameof(description), DescriptionMaxLength);
+
+        if (price < 0)
+        {
+            throw new DomainValidationException("A game price cannot be negative.");
+        }
+
+        Title = title;
+        Description = description;
+        Price = price;
+        ReleaseDate = releaseDate;
+    }
+
     private static string NormalizeRequiredText(string value, string parameterName, int maxLength)
     {
         if (string.IsNullOrWhiteSpace(value))
         {
-            throw new ArgumentException("A required text value cannot be empty.", parameterName);
+            throw new DomainValidationException("A required text value cannot be empty.");
         }
 
         value = value.Trim();
 
         if (value.Length > maxLength)
         {
-            throw new ArgumentException($"A text value cannot be longer than {maxLength} characters.", parameterName);
+            throw new DomainValidationException($"A text value cannot be longer than {maxLength} characters.");
         }
 
         return value;
@@ -101,7 +122,7 @@ public sealed class Game
 
         if (value.Length > maxLength)
         {
-            throw new ArgumentException($"A text value cannot be longer than {maxLength} characters.", parameterName);
+            throw new DomainValidationException($"A text value cannot be longer than {maxLength} characters.");
         }
 
         return value;
