@@ -1,4 +1,5 @@
 using GamingStore.Api.Controllers;
+using GamingStore.Api.DTOs;
 using GamingStore.Api.Services;
 using Microsoft.AspNetCore.Mvc;
 

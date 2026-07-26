@@ -1,3 +1,4 @@
+using GamingStore.Api.DTOs;
 using GamingStore.Api.Models;
 using GamingStore.Api.Models.Entities;
 using GamingStore.Api.Repositories;
