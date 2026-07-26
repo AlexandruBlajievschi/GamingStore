@@ -5,19 +5,23 @@ public sealed record CreateGameRequest(
     string Title,
     string? Description,
     decimal Price,
-    DateOnly? ReleaseDate);
+    DateOnly? ReleaseDate,
+    string? CoverImageUrl = null);
 
 public sealed record UpdateGameRequest(
     string Title,
     string? Description,
     decimal Price,
-    DateOnly? ReleaseDate);
+    DateOnly? ReleaseDate,
+    string? CoverImageUrl = null);
 
 public sealed record GameResponse(
     Guid Id,
+    string Slug,
     string Title,
     string? Description,
     decimal Price,
     DateOnly? ReleaseDate,
+    string? CoverImageUrl,
     Guid SellerId,
     string SellerName);

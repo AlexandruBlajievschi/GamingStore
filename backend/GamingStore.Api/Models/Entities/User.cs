@@ -1,3 +1,5 @@
+using GamingStore.Api.Models.Validation;
+
 namespace GamingStore.Api.Models.Entities;
 
 public sealed class User
@@ -31,59 +33,21 @@ public sealed class User
 
     public static User Create(string firstName, string lastName, string email)
     {
-        firstName = NormalizeRequiredText(firstName, nameof(firstName), NameMaxLength);
-        lastName = NormalizeRequiredText(lastName, nameof(lastName), NameMaxLength);
-        email = NormalizeEmail(email, nameof(email));
+        firstName = DomainText.Required(firstName, NameMaxLength);
+        lastName = DomainText.Required(lastName, NameMaxLength);
+        email = DomainText.Email(email, EmailMaxLength, "user");
 
         return new User(Guid.NewGuid(), firstName, lastName, email, DateTime.UtcNow);
     }
 
     public void UpdateDetails(string firstName, string lastName, string email)
     {
-        firstName = NormalizeRequiredText(firstName, nameof(firstName), NameMaxLength);
-        lastName = NormalizeRequiredText(lastName, nameof(lastName), NameMaxLength);
-        email = NormalizeEmail(email, nameof(email));
+        firstName = DomainText.Required(firstName, NameMaxLength);
+        lastName = DomainText.Required(lastName, NameMaxLength);
+        email = DomainText.Email(email, EmailMaxLength, "user");
 
         FirstName = firstName;
         LastName = lastName;
         Email = email;
-    }
-
-    private static string NormalizeRequiredText(string value, string parameterName, int maxLength)
-    {
-        if (string.IsNullOrWhiteSpace(value))
-        {
-            throw new DomainValidationException("A required text value cannot be empty.");
-        }
-
-        value = value.Trim();
-
-        if (value.Length > maxLength)
-        {
-            throw new DomainValidationException($"A text value cannot be longer than {maxLength} characters.");
-        }
-
-        return value;
-    }
-
-    private static string NormalizeEmail(string value, string parameterName)
-    {
-        value = NormalizeRequiredText(value, parameterName, EmailMaxLength).ToLowerInvariant();
-
-        try
-        {
-            var address = new System.Net.Mail.MailAddress(value);
-
-            if (!string.Equals(address.Address, value, StringComparison.OrdinalIgnoreCase))
-            {
-                throw new DomainValidationException("A user email must be a valid email address.");
-            }
-        }
-        catch (FormatException)
-        {
-            throw new DomainValidationException("A user email must be a valid email address.");
-        }
-
-        return value;
     }
 }

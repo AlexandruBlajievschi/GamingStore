@@ -14,10 +14,44 @@ public sealed class GameTests
 
         Assert.NotEqual(Guid.Empty, game.Id);
         Assert.Equal(SellerId, game.SellerId);
+        Assert.Equal("new-game", game.Slug);
         Assert.Equal("New Game", game.Title);
         Assert.Equal("Fresh listing.", game.Description);
         Assert.Equal(9.99m, game.Price);
         Assert.True(game.CreatedAt <= DateTime.UtcNow);
+    }
+
+    [Theory]
+    [InlineData("Auralith Drift", "auralith-drift")]
+    [InlineData("  Café 99: Afterlight!  ", "cafe-99-afterlight")]
+    public void CreateSlug_ReturnsUrlSafeValue(string title, string expected)
+    {
+        Assert.Equal(expected, Game.CreateSlug(title));
+    }
+
+    [Fact]
+    public void Create_StoresValidCoverImageUrl()
+    {
+        var game = Game.Create(
+            SellerId,
+            "New Game",
+            null,
+            9.99m,
+            coverImageUrl: " /images/games/new-game.webp ");
+
+        Assert.Equal("/images/games/new-game.webp", game.CoverImageUrl);
+    }
+
+    [Fact]
+    public void Create_ThrowsValidation_WhenCoverImageUrlIsInvalid()
+    {
+        Assert.Throws<DomainValidationException>(
+            () => Game.Create(
+                SellerId,
+                "New Game",
+                null,
+                9.99m,
+                coverImageUrl: "images/games/new-game.webp"));
     }
 
     [Fact]
@@ -76,6 +110,7 @@ public sealed class GameTests
         Assert.Equal("Updated description.", game.Description);
         Assert.Equal(12.99m, game.Price);
         Assert.Equal(new DateOnly(2026, 7, 24), game.ReleaseDate);
+        Assert.Equal("old-game", game.Slug);
     }
 
     [Fact]

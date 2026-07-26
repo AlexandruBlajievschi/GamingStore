@@ -3,6 +3,7 @@ using System;
 using GamingStore.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace GamingStore.Api.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726160938_AddGameStorefrontFields")]
+    partial class AddGameStorefrontFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -84,26 +87,24 @@ namespace GamingStore.Api.Data.Migrations
                         new
                         {
                             Id = new Guid("54acfc5b-694a-42c3-a21c-98188f1cf0a6"),
-                            CoverImageUrl = "/images/games/cindervolt-coliseum.webp",
                             CreatedAt = new DateTime(2026, 7, 23, 10, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Battle rival magnetic drones around a living forge where every power-up reshapes the arena.",
+                            Description = "Fast local arena battles with simple controls and sharp item timing.",
                             Price = 14.99m,
                             ReleaseDate = new DateOnly(2026, 3, 8),
                             SellerId = new Guid("84aa2fc0-1089-47d2-8a50-82f4d6e1de5f"),
-                            Slug = "cindervolt-coliseum",
-                            Title = "Cindervolt Coliseum"
+                            Slug = "pixel-forge-arena",
+                            Title = "Pixel Forge Arena"
                         },
                         new
                         {
                             Id = new Guid("ab18590a-11fd-4269-9909-11aa2df97688"),
-                            CoverImageUrl = "/images/games/mosswick-and-mooncoin.webp",
                             CreatedAt = new DateTime(2026, 7, 23, 10, 0, 0, 0, DateTimeKind.Utc),
-                            Description = "Run a woodland curiosity shop where every enchanted object arrives with a story and a price.",
+                            Description = "A shopkeeping adventure where every item has a story and a margin.",
                             Price = 19.99m,
                             ReleaseDate = new DateOnly(2024, 9, 27),
                             SellerId = new Guid("84aa2fc0-1089-47d2-8a50-82f4d6e1de5f"),
-                            Slug = "mosswick-and-mooncoin",
-                            Title = "Mosswick & Mooncoin"
+                            Slug = "dungeon-ledger",
+                            Title = "Dungeon Ledger"
                         });
                 });
 

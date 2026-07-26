@@ -11,10 +11,12 @@ public sealed class GamesControllerTests
     private static readonly Guid SellerId = Guid.Parse("84aa2fc0-1089-47d2-8a50-82f4d6e1de5f");
     private static readonly GameResponse Response = new(
         GameId,
-        "Starfall Tactics",
-        "Fleet strategy.",
+        "auralith-drift",
+        "Auralith Drift",
+        "Ocean exploration.",
         24.99m,
         new DateOnly(2025, 11, 14),
+        "/images/games/auralith-drift.webp",
         SellerId,
         "Northbyte Games");
 
@@ -36,6 +38,17 @@ public sealed class GamesControllerTests
         var controller = new GamesController(new FakeGameService { Game = Response });
 
         var result = await controller.GetById(GameId, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(result.Result);
+        Assert.Equal(Response, ok.Value);
+    }
+
+    [Fact]
+    public async Task GetBySlug_ReturnsOk()
+    {
+        var controller = new GamesController(new FakeGameService { Game = Response });
+
+        var result = await controller.GetBySlug(Response.Slug, CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(result.Result);
         Assert.Equal(Response, ok.Value);
@@ -92,6 +105,11 @@ public sealed class GamesControllerTests
         }
 
         public Task<GameResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Game ?? Response);
+        }
+
+        public Task<GameResponse> GetBySlugAsync(string slug, CancellationToken cancellationToken)
         {
             return Task.FromResult(Game ?? Response);
         }

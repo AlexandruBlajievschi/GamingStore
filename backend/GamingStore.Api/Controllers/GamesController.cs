@@ -24,6 +24,16 @@ public sealed class GamesController(IGameService gameService) : ControllerBase
         return Ok(game);
     }
 
+    [HttpGet("by-slug/{slug}")]
+    public async Task<ActionResult<GameResponse>> GetBySlug(
+        string slug,
+        CancellationToken cancellationToken)
+    {
+        var game = await gameService.GetBySlugAsync(slug, cancellationToken);
+
+        return Ok(game);
+    }
+
     [HttpPost]
     public async Task<ActionResult<GameResponse>> Create(
         CreateGameRequest request,

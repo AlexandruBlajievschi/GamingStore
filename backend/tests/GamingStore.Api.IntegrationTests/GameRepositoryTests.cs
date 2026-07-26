@@ -17,8 +17,11 @@ public sealed class GameRepositoryTests
         var games = await repository.GetAllAsync(CancellationToken.None);
 
         Assert.Equal(3, games.Count);
-        Assert.Equal(["Dungeon Ledger", "Pixel Forge Arena", "Starfall Tactics"], games.Select(game => game.Title));
+        Assert.Equal(
+            ["Auralith Drift", "Cindervolt Coliseum", "Mosswick & Mooncoin"],
+            games.Select(game => game.Title));
         Assert.All(games, game => Assert.Equal("Northbyte Games", game.Seller?.Name));
+        Assert.All(games, game => Assert.NotNull(game.CoverImageUrl));
     }
 
     [Fact]
@@ -31,8 +34,34 @@ public sealed class GameRepositoryTests
         var game = await repository.GetByIdAsync(seededGameId, CancellationToken.None);
 
         Assert.NotNull(game);
-        Assert.Equal("Starfall Tactics", game.Title);
+        Assert.Equal("Auralith Drift", game.Title);
+        Assert.Equal("auralith-drift", game.Slug);
+        Assert.Equal("/images/games/auralith-drift.webp", game.CoverImageUrl);
         Assert.Equal("Northbyte Games", game.Seller?.Name);
+    }
+
+    [Fact]
+    public async Task GetBySlugAsync_ReturnsGameWithSeller_WhenGameExists()
+    {
+        await using var database = await TestDatabase.CreateAsync();
+        var repository = new GameRepository(database.Context);
+
+        var game = await repository.GetBySlugAsync("auralith-drift", CancellationToken.None);
+
+        Assert.NotNull(game);
+        Assert.Equal("Auralith Drift", game.Title);
+        Assert.Equal("Northbyte Games", game.Seller?.Name);
+    }
+
+    [Fact]
+    public async Task GetBySlugAsync_ReturnsNull_WhenGameDoesNotExist()
+    {
+        await using var database = await TestDatabase.CreateAsync();
+        var repository = new GameRepository(database.Context);
+
+        var game = await repository.GetBySlugAsync("missing-game", CancellationToken.None);
+
+        Assert.Null(game);
     }
 
     [Fact]
@@ -97,6 +126,7 @@ public sealed class GameRepositoryTests
 
         Assert.NotNull(savedGame);
         Assert.Equal("New Game", savedGame.Title);
+        Assert.Equal("new-game", savedGame.Slug);
         Assert.Equal("Northbyte Games", savedGame.Seller?.Name);
     }
 

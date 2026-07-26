@@ -21,6 +21,7 @@ public sealed class GameServiceTests
 
         var response = Assert.Single(games);
         Assert.Equal(game.Id, response.Id);
+        Assert.Equal("starfall-tactics", response.Slug);
         Assert.Equal("Starfall Tactics", response.Title);
         Assert.Equal("Fleet strategy.", response.Description);
         Assert.Equal(24.99m, response.Price);
@@ -50,21 +51,63 @@ public sealed class GameServiceTests
     }
 
     [Fact]
+    public async Task GetBySlugAsync_ReturnsMappedGame_WhenGameExists()
+    {
+        var game = Game.Create(SellerId, "Auralith Drift", null, 24.99m);
+        var service = new GameService(FakeGameRepository.WithGames(game));
+
+        var response = await service.GetBySlugAsync("auralith-drift", CancellationToken.None);
+
+        Assert.Equal(game.Id, response.Id);
+        Assert.Equal("auralith-drift", response.Slug);
+    }
+
+    [Fact]
+    public async Task GetBySlugAsync_ThrowsNotFound_WhenGameDoesNotExist()
+    {
+        var service = new GameService(new FakeGameRepository());
+
+        await Assert.ThrowsAsync<ResourceNotFoundException>(
+            () => service.GetBySlugAsync("missing-game", CancellationToken.None));
+    }
+
+    [Fact]
     public async Task CreateAsync_AddsGameAndSaves_WhenRequestIsValid()
     {
         var repository = new FakeGameRepository();
         repository.AddSeller(SellerId);
         var service = new GameService(repository);
-        var request = new CreateGameRequest(SellerId, " Pixel Forge Arena ", " Fast battles. ", 14.99m, null);
+        var request = new CreateGameRequest(
+            SellerId,
+            " Pixel Forge Arena ",
+            " Fast battles. ",
+            14.99m,
+            null,
+            "/images/games/pixel-forge-arena.webp");
 
         var response = await service.CreateAsync(request, CancellationToken.None);
 
         Assert.NotEqual(Guid.Empty, response.Id);
+        Assert.Equal("pixel-forge-arena", response.Slug);
         Assert.Equal("Pixel Forge Arena", response.Title);
         Assert.Equal("Fast battles.", response.Description);
         Assert.Equal(14.99m, response.Price);
+        Assert.Equal("/images/games/pixel-forge-arena.webp", response.CoverImageUrl);
         Assert.Equal(1, repository.SaveChangesCount);
         Assert.Contains(repository.Games, game => game.Id == response.Id);
+    }
+
+    [Fact]
+    public async Task CreateAsync_AppendsSuffix_WhenGeneratedSlugAlreadyExists()
+    {
+        var existingGame = Game.Create(SellerId, "Auralith Drift", null, 24.99m);
+        var repository = FakeGameRepository.WithGames(existingGame);
+        var service = new GameService(repository);
+        var request = new CreateGameRequest(SellerId, "Auralith Drift", null, 29.99m, null);
+
+        var response = await service.CreateAsync(request, CancellationToken.None);
+
+        Assert.Equal("auralith-drift-2", response.Slug);
     }
 
     [Fact]
@@ -197,6 +240,11 @@ public sealed class GameServiceTests
             return Task.FromResult(Games.FirstOrDefault(game => game.Id == id));
         }
 
+        public Task<Game?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Games.FirstOrDefault(game => game.Slug == slug));
+        }
+
         public Task<Game?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken)
         {
             return Task.FromResult(Games.FirstOrDefault(game => game.Id == id));
@@ -205,6 +253,11 @@ public sealed class GameServiceTests
         public Task<bool> SellerExistsAsync(Guid sellerId, CancellationToken cancellationToken)
         {
             return Task.FromResult(_sellerIds.Contains(sellerId));
+        }
+
+        public Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken)
+        {
+            return Task.FromResult(Games.Any(game => game.Slug == slug));
         }
 
         public Task AddAsync(Game game, CancellationToken cancellationToken)

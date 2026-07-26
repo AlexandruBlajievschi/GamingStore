@@ -6,6 +6,8 @@ public interface IGameService
 
     Task<GameResponse> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
+    Task<GameResponse> GetBySlugAsync(string slug, CancellationToken cancellationToken);
+
     Task<GameResponse> CreateAsync(CreateGameRequest request, CancellationToken cancellationToken);
 
     Task<GameResponse> UpdateAsync(Guid id, UpdateGameRequest request, CancellationToken cancellationToken);
@@ -31,16 +33,29 @@ public sealed class GameService(IGameRepository gameRepository) : IGameService
         return MapToResponse(game);
     }
 
+    public async Task<GameResponse> GetBySlugAsync(
+        string slug,
+        CancellationToken cancellationToken)
+    {
+        var game = await gameRepository.GetBySlugAsync(slug, cancellationToken)
+            ?? throw new ResourceNotFoundException($"Game '{slug}' was not found.");
+
+        return MapToResponse(game);
+    }
+
     public async Task<GameResponse> CreateAsync(CreateGameRequest request, CancellationToken cancellationToken)
     {
         await EnsureSellerExistsAsync(request.SellerId, cancellationToken);
+        var slug = await CreateAvailableSlugAsync(request.Title, cancellationToken);
 
         var game = Game.Create(
             request.SellerId,
             request.Title,
             request.Description,
             request.Price,
-            request.ReleaseDate);
+            request.ReleaseDate,
+            request.CoverImageUrl,
+            slug);
 
         await gameRepository.AddAsync(game, cancellationToken);
         await gameRepository.SaveChangesAsync(cancellationToken);
@@ -61,7 +76,8 @@ public sealed class GameService(IGameRepository gameRepository) : IGameService
             request.Title,
             request.Description,
             request.Price,
-            request.ReleaseDate);
+            request.ReleaseDate,
+            request.CoverImageUrl);
 
         await gameRepository.SaveChangesAsync(cancellationToken);
 
@@ -98,14 +114,33 @@ public sealed class GameService(IGameRepository gameRepository) : IGameService
         }
     }
 
+    private async Task<string> CreateAvailableSlugAsync(
+        string title,
+        CancellationToken cancellationToken)
+    {
+        var baseSlug = Game.CreateSlug(title);
+        var slug = baseSlug;
+        var suffix = 2;
+
+        while (await gameRepository.SlugExistsAsync(slug, cancellationToken))
+        {
+            slug = $"{baseSlug}-{suffix}";
+            suffix++;
+        }
+
+        return slug;
+    }
+
     private static GameResponse MapToResponse(Game game)
     {
         return new GameResponse(
             game.Id,
+            game.Slug,
             game.Title,
             game.Description,
             game.Price,
             game.ReleaseDate,
+            game.CoverImageUrl,
             game.SellerId,
             game.Seller?.Name ?? string.Empty);
     }

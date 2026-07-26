@@ -6,7 +6,11 @@ public interface IGameRepository
 
     Task<Game?> GetByIdAsync(Guid id, CancellationToken cancellationToken);
 
+    Task<Game?> GetBySlugAsync(string slug, CancellationToken cancellationToken);
+
     Task<Game?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken);
+
+    Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken);
 
     Task<bool> SellerExistsAsync(Guid sellerId, CancellationToken cancellationToken);
 
@@ -36,6 +40,14 @@ public sealed class GameRepository(ApplicationDbContext dbContext) : IGameReposi
             .FirstOrDefaultAsync(game => game.Id == id, cancellationToken);
     }
 
+    public async Task<Game?> GetBySlugAsync(string slug, CancellationToken cancellationToken)
+    {
+        return await dbContext.Games
+            .AsNoTracking()
+            .Include(game => game.Seller)
+            .FirstOrDefaultAsync(game => game.Slug == slug, cancellationToken);
+    }
+
     public async Task<Game?> GetTrackedByIdAsync(Guid id, CancellationToken cancellationToken)
     {
         return await dbContext.Games
@@ -47,6 +59,12 @@ public sealed class GameRepository(ApplicationDbContext dbContext) : IGameReposi
     {
         return await dbContext.Sellers
             .AnyAsync(seller => seller.Id == sellerId, cancellationToken);
+    }
+
+    public async Task<bool> SlugExistsAsync(string slug, CancellationToken cancellationToken)
+    {
+        return await dbContext.Games
+            .AnyAsync(game => game.Slug == slug, cancellationToken);
     }
 
     public async Task AddAsync(Game game, CancellationToken cancellationToken)

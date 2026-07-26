@@ -1,39 +1,72 @@
-import { HealthPanel } from '../features/api-health';
-import { getApiHealth, type ApiHealth } from '../shared/api';
+import { GameCard } from '../features/games';
+import { getGames, type Game } from '../shared/api';
 
-async function loadApiHealth(): Promise<{
-  health: ApiHealth | null;
+async function loadGames(): Promise<{
+  games: Game[];
   error: string | null;
 }> {
   try {
     return {
-      health: await getApiHealth(),
+      games: await getGames(),
       error: null,
     };
   } catch {
     return {
-      health: null,
-      error: 'Backend is not reachable yet.',
+      games: [],
+      error: 'The game catalog is unavailable until the backend is running.',
     };
   }
 }
 
 export default async function HomePage() {
-  const { health, error } = await loadApiHealth();
+  const { games, error: gamesError } = await loadGames();
 
   return (
-    <main className="mx-auto grid min-h-screen w-[min(1040px,calc(100%-2rem))] gap-8 py-16">
-      <section className="grid max-w-3xl gap-4 self-end">
-        <p className="text-sm font-bold uppercase text-teal-800">Gaming Store</p>
-        <h1 className="text-5xl font-bold leading-none text-zinc-950 md:text-7xl">
-          Frontend and backend are ready to grow together.
-        </h1>
-        <p className="text-lg text-slate-600">
-          A Next.js and React storefront for players, sellers, and the first game catalog features.
-        </p>
+    <main className="min-h-screen bg-slate-950 text-white">
+      <section className="border-b border-white/10 bg-[radial-gradient(circle_at_top_left,_#164e63,_#020617_52%)]">
+        <div className="mx-auto grid w-[min(1180px,calc(100%-2rem))] gap-6 py-20 md:py-28">
+          <p className="text-sm font-bold uppercase tracking-[0.28em] text-cyan-300">
+            Gaming Store
+          </p>
+          <h1 className="max-w-4xl text-5xl font-bold leading-[0.95] md:text-7xl">
+            Discover worlds worth getting lost in.
+          </h1>
+          <p className="max-w-2xl text-lg text-slate-300">
+            Independent games, memorable ideas, and a catalog that starts with one original journey.
+          </p>
+        </div>
       </section>
 
-      <HealthPanel health={health} error={error} />
+      <section
+        className="mx-auto grid w-[min(1180px,calc(100%-2rem))] gap-8 py-16"
+        aria-labelledby="catalog-heading"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-4">
+          <div className="grid gap-2">
+            <p className="text-sm font-bold uppercase tracking-[0.2em] text-cyan-300">
+              Storefront test
+            </p>
+            <h2 id="catalog-heading" className="text-3xl font-bold md:text-4xl">
+              Game catalog
+            </h2>
+          </div>
+          <p className="max-w-md text-sm text-slate-400">
+            Product URLs and cover paths come directly from the ASP.NET Core API.
+          </p>
+        </div>
+
+        {gamesError ? (
+          <p className="rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5 text-amber-100">
+            {gamesError}
+          </p>
+        ) : (
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {games.map((game) => (
+              <GameCard key={game.id} game={game} />
+            ))}
+          </div>
+        )}
+      </section>
     </main>
   );
 }
