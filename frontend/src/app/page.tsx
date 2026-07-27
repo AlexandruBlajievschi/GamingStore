@@ -1,4 +1,4 @@
-import { GameCard } from '../features/games';
+import { GameCard, GameSearch } from '../features/games';
 import { getGames, type Game } from '../shared/api';
 
 async function loadGames(): Promise<{
@@ -20,20 +20,14 @@ async function loadGames(): Promise<{
 
 export default async function HomePage() {
   const { games, error: gamesError } = await loadGames();
+  const featuredGames = games.slice(0, 3);
 
   return (
     <main className="min-h-screen bg-slate-950 text-white">
       <section className="border-b border-white/10 bg-[radial-gradient(circle_at_top_left,_#164e63,_#020617_52%)]">
-        <div className="mx-auto grid w-[min(1180px,calc(100%-2rem))] gap-6 py-20 md:py-28">
-          <p className="text-sm font-bold uppercase tracking-[0.28em] text-cyan-300">
-            Gaming Store
-          </p>
-          <h1 className="max-w-4xl text-5xl font-bold leading-[0.95] md:text-7xl">
-            Discover worlds worth getting lost in.
-          </h1>
-          <p className="max-w-2xl text-lg text-slate-300">
-            Independent games, memorable ideas, and a catalog that starts with one original journey.
-          </p>
+        <div className="mx-auto w-[min(1180px,calc(100%-2rem))] py-10 md:py-12">
+          <h1 className="sr-only">Search the Gaming Store</h1>
+          <GameSearch games={games} />
         </div>
       </section>
 
@@ -47,7 +41,7 @@ export default async function HomePage() {
               Storefront test
             </p>
             <h2 id="catalog-heading" className="text-3xl font-bold md:text-4xl">
-              Game catalog
+              Featured games
             </h2>
           </div>
           <p className="max-w-md text-sm text-slate-400">
@@ -61,7 +55,7 @@ export default async function HomePage() {
           </p>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {games.map((game) => (
+            {featuredGames.map((game) => (
               <GameCard key={game.id} game={game} />
             ))}
           </div>

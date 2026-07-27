@@ -3,6 +3,7 @@ obj/
 node_modules/
 dist/
 .next/
+frontend/next-env.d.ts
 TestResults/
 .env
 .env.*

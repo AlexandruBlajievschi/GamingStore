@@ -1,9 +1,3 @@
-export type ApiHealth = {
-  status: string;
-  message: string;
-  checkedAt: string;
-};
-
 export type Game = {
   id: string;
   slug: string;

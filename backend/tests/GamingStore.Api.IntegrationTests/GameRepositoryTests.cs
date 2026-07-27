@@ -16,9 +16,23 @@ public sealed class GameRepositoryTests
 
         var games = await repository.GetAllAsync(CancellationToken.None);
 
-        Assert.Equal(3, games.Count);
+        Assert.Equal(13, games.Count);
         Assert.Equal(
-            ["Auralith Drift", "Cindervolt Coliseum", "Mosswick & Mooncoin"],
+            [
+                "Auralith Drift",
+                "Cindervolt Coliseum",
+                "Ember Library",
+                "Glacier Guild",
+                "Glass Planet Survey",
+                "Iron Vale Rally",
+                "Midnight Parcel",
+                "Mosswick & Mooncoin",
+                "Neon Orchard",
+                "Rune Harbor",
+                "Starfall Kitchen",
+                "Tiny Titan Tactics",
+                "Velvet Circuit"
+            ],
             games.Select(game => game.Title));
         Assert.All(games, game => Assert.Equal("Northbyte Games", game.Seller?.Name));
         Assert.All(games, game => Assert.NotNull(game.CoverImageUrl));
