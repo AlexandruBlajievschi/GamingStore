@@ -74,6 +74,23 @@ Tailwind is preferred because it works well with Next.js, supports fast responsi
 
 Tailwind does not replace CSS knowledge. Use semantic HTML, accessible markup, responsive layout primitives, and clear component structure. Reach for custom CSS only when Tailwind utilities become awkward or the styling belongs in a reusable base layer.
 
+## Usability Heuristics
+
+Use Nielsen's 10 usability heuristics as a frontend design and review lens. They are not a replacement for user research, accessibility checks, or tests, but they should guide everyday interface decisions:
+
+- Visibility of system status: keep users informed about loading, empty, success, and error states.
+- Match between the system and the real world: use familiar storefront language, prices, product names, and actions.
+- User control and freedom: make navigation, cancellation, clearing inputs, and recovery paths obvious.
+- Consistency and standards: follow platform, browser, and e-commerce conventions unless there is a strong reason not to.
+- Error prevention: prefer constraints, validation, and clear affordances before users make mistakes.
+- Recognition rather than recall: expose useful labels, hints, visible options, and remembered context instead of relying on memory.
+- Flexibility and efficiency of use: support efficient repeated use with search, keyboard behavior, sensible defaults, and fast paths.
+- Aesthetic and minimalist design: keep pages focused on the current task and remove diagnostic or decorative clutter when it stops helping.
+- Help users recognize, diagnose, and recover from errors: write specific, plain-language messages and preserve the user's path forward.
+- Help and documentation: document product behavior and project conventions where future contributors will need them.
+
+When reviewing or building a user-facing frontend change, consider whether any violated heuristic points to a concrete improvement. Prioritize fixes that affect task completion, trust, accessibility, or purchase confidence.
+
 ## Code Quality
 
 Use ESLint and Prettier consistently.

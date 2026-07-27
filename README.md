@@ -8,8 +8,9 @@ The first version will keep the scope simple: visitors can browse the store, reg
 
 - `backend/` - .NET API using a simple MVC-style structure.
 - `frontend/` - Next.js App Router frontend using React, TypeScript, Tailwind CSS, and Feature-Sliced Design.
+- `docs/` - project documentation for shared engineering and product conventions.
 
-## Current Connection
+## Health Check
 
 The backend exposes a small health endpoint at:
 
@@ -17,11 +18,11 @@ The backend exposes a small health endpoint at:
 GET http://localhost:5215/api/health
 ```
 
-The frontend reads that endpoint through Next.js rewrites, so local frontend code can call:
+This endpoint is kept for backend diagnostics, deployment checks, and future monitoring. The public frontend health page was removed because the storefront itself now exercises real API behavior through the game catalog.
 
-```text
-/api/health
-```
+## Usability
+
+Frontend work should use Nielsen's 10 usability heuristics as a design and review lens. See `docs/usability-heuristics.md`.
 
 ## Early Domain Notes
 
