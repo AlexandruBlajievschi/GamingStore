@@ -14,6 +14,7 @@ public sealed class UserTests
         Assert.Equal("Alex", user.FirstName);
         Assert.Equal("Player", user.LastName);
         Assert.Equal("alex.player@gamingstore.local", user.Email);
+        Assert.Equal("alex.player@gamingstore.local", user.UserName);
     }
 
     [Theory]

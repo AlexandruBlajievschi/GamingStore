@@ -16,8 +16,14 @@ This project will follow a simple MVC-style structure:
 
 ```text
 GET /api/health
+GET /api/auth/antiforgery-token
+POST /api/auth/register
+POST /api/auth/login
+GET /api/auth/me
+POST /api/auth/logout
 GET /api/games
 GET /api/games/{id}
+GET /api/games/by-slug/{slug}
 POST /api/games
 PUT /api/games/{id}
 DELETE /api/games/{id}
@@ -33,7 +39,7 @@ PUT /api/users/{id}
 DELETE /api/users/{id}
 ```
 
-The health endpoint lets the frontend confirm that the API is reachable. Games, sellers, and users provide the first full CRUD API surfaces.
+The health endpoint lets the frontend confirm that the API is reachable. Games, sellers, and users provide the first full CRUD API surfaces. Authentication uses ASP.NET Core Identity with a protected browser cookie. See [`../docs/authentication.md`](../docs/authentication.md) for the current authentication and authorization behavior.
 
 ## Testing
 

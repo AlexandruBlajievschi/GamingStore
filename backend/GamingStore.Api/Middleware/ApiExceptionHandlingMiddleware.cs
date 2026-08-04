@@ -27,6 +27,14 @@ public sealed class ApiExceptionHandlingMiddleware(RequestDelegate next)
                 "Resource was not found.",
                 exception.Message);
         }
+        catch (AuthenticationFailedException exception)
+        {
+            await WriteProblemDetailsAsync(
+                context,
+                StatusCodes.Status401Unauthorized,
+                "Authentication failed.",
+                exception.Message);
+        }
     }
 
     private static async Task WriteProblemDetailsAsync(

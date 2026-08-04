@@ -24,6 +24,12 @@ This endpoint is kept for backend diagnostics, deployment checks, and future mon
 
 Frontend work should use Nielsen's 10 usability heuristics as a design and review lens. See `docs/usability-heuristics.md`.
 
+## Authentication and Authorization
+
+Gaming Store currently supports local email-and-password accounts through ASP.NET Core Identity. The Next.js frontend uses a same-origin API rewrite and an HttpOnly Identity cookie for browser sessions. Registration, login, account status, and logout are available through the storefront UI.
+
+See [`docs/authentication.md`](docs/authentication.md) for the current routes, security settings, data model, UI behavior, and authorization boundary.
+
 ## Early Domain Notes
 
 - `Guest` - anonymous visitor; usually not a database role.

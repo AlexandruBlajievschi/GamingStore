@@ -37,6 +37,14 @@ You can override the backend URL with:
 API_BASE_URL=http://localhost:5215 npm run dev
 ```
 
+## Authentication UI
+
+The storefront header displays an account icon beside search and before the cart icon. A neutral account icon means the visitor is logged out; a cyan icon with a green check means an account is authenticated. The account menu shows the current user's name and email and provides logout.
+
+Local account routes are available at `/login` and `/register`. Browser requests use the same-origin `/api/*` rewrite, an HttpOnly session cookie, and an antiforgery token. Development-only console messages prefixed with `[Gaming Store auth]` show the current user and successful or failed authentication events without logging passwords, cookies, or antiforgery tokens.
+
+See [`../docs/authentication.md`](../docs/authentication.md) for the complete current behavior.
+
 ## Code Quality
 
 Run checks before finishing frontend work:

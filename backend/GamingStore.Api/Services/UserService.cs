@@ -80,7 +80,7 @@ public sealed class UserService(IUserRepository userRepository) : IUserService
             user.Id,
             user.FirstName,
             user.LastName,
-            user.Email,
+            user.Email ?? string.Empty,
             user.CreatedAt);
     }
 }

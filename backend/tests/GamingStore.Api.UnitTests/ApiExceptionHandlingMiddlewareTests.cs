@@ -41,6 +41,21 @@ public sealed class ApiExceptionHandlingMiddlewareTests
     }
 
     [Fact]
+    public async Task InvokeAsync_WritesUnauthorizedProblemDetails_WhenAuthenticationFails()
+    {
+        var middleware = new ApiExceptionHandlingMiddleware(_ =>
+            throw new AuthenticationFailedException("Invalid email or password."));
+        var context = CreateHttpContext();
+
+        await middleware.InvokeAsync(context);
+
+        var problemDetails = await ReadProblemDetailsAsync(context);
+        Assert.Equal(StatusCodes.Status401Unauthorized, context.Response.StatusCode);
+        Assert.Equal("Authentication failed.", problemDetails.Title);
+        Assert.Equal("Invalid email or password.", problemDetails.Detail);
+    }
+
+    [Fact]
     public async Task InvokeAsync_AllowsSuccessfulRequestToContinue()
     {
         var middleware = new ApiExceptionHandlingMiddleware(context =>

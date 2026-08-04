@@ -1,8 +1,9 @@
 using GamingStore.Api.Models.Validation;
+using Microsoft.AspNetCore.Identity;
 
 namespace GamingStore.Api.Models.Entities;
 
-public sealed class User
+public sealed class User : IdentityUser<Guid>
 {
     private const int NameMaxLength = 100;
     private const int EmailMaxLength = 320;
@@ -13,6 +14,7 @@ public sealed class User
     }
 
     private User(Guid id, string firstName, string lastName, string email, DateTime createdAt)
+        : base(email)
     {
         Id = id;
         FirstName = firstName;
@@ -21,13 +23,9 @@ public sealed class User
         CreatedAt = createdAt;
     }
 
-    public Guid Id { get; private set; }
-
     public string FirstName { get; private set; } = string.Empty;
 
     public string LastName { get; private set; } = string.Empty;
-
-    public string Email { get; private set; } = string.Empty;
 
     public DateTime CreatedAt { get; private set; }
 
@@ -49,5 +47,6 @@ public sealed class User
         FirstName = firstName;
         LastName = lastName;
         Email = email;
+        UserName = email;
     }
 }
