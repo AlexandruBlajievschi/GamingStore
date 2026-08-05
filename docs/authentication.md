@@ -14,9 +14,9 @@ The Identity migration extends the `Users` table with password, security-stamp, 
 
 The seeded `alex.player@gamingstore.local` user has no password and cannot use password login. Users created through registration receive an Identity password hash.
 
-## Current Sign-In Method
+## Sign-In Methods
 
-Gaming Store currently accepts local email-and-password registration and login.
+Gaming Store accepts local email-and-password registration and Google authentication. Both methods finish by issuing the same ASP.NET Core Identity application cookie.
 
 Registration requires:
 
@@ -28,15 +28,19 @@ Email addresses are trimmed, normalized to lowercase in the domain model, and no
 
 The configured password rules allow passphrases without mandatory uppercase letters, digits, or symbols. ASP.NET Core Identity hashes passwords with PBKDF2-HMAC-SHA512, a unique random salt, and 220,000 iterations. The database stores only Identity's encoded `PasswordHash`, never the original password.
 
+Google uses a server-side OAuth flow. ASP.NET Core redirects the browser to Google, validates the returned state and correlation cookie, exchanges the authorization code on the server, and accepts only a Google identity whose v3 user-info response contains `email_verified: true`. The application requests only the basic `openid`, profile, and email scopes and does not persist Google's access or refresh tokens.
+
+On first Google sign-in, Identity creates a normal `Users` row without a password hash and adds the provider name and stable Google account identifier to `AspNetUserLogins`. Later Google sign-ins find the local user through that login row. A password account with the same email is not linked automatically; the authenticated user must explicitly connect Google from the account menu.
+
 ## Browser Session
 
-Both registration and login issue the same ASP.NET Core Identity application cookie. The cookie is:
+Local registration, password login, and Google login issue the same ASP.NET Core Identity application cookie. The cookie is:
 
 - HttpOnly
 - SameSite Lax
 - host-only
 - valid for an eight-hour sliding window
-- non-persistent because the current sign-in actions do not enable “remember me”
+- non-persistent because the current sign-in actions do not enable "remember me"
 
 During HTTP development the cookie is named `GamingStore.Auth` and uses the request's security level. Outside development it is named `__Host-GamingStore.Auth` and requires HTTPS.
 
@@ -59,6 +63,11 @@ It then sends the returned token in the `X-CSRF-TOKEN` header of the modifying r
 | `GET` | `/api/auth/antiforgery-token` | Anonymous | Issues the antiforgery cookie and returns its matching request token. |
 | `POST` | `/api/auth/register` | Anonymous + antiforgery | Creates a local user and signs them in. |
 | `POST` | `/api/auth/login` | Anonymous + antiforgery | Verifies the password and creates a session. |
+| `GET` | `/api/auth/google` | Anonymous + OAuth state | Starts Google authentication. |
+| `GET` | `/api/auth/google/callback` | Google middleware | Validates Google's response and creates a short-lived external Identity principal. |
+| `GET` | `/api/auth/google/complete` | Anonymous | Creates or finds the linked local user and issues the application cookie. |
+| `GET` | `/api/auth/google/link` | Authenticated + OAuth state | Starts explicit linking to the signed-in account. |
+| `GET` | `/api/auth/google/link-complete` | Authenticated | Stores the Google login link after validating both sessions. |
 | `GET` | `/api/auth/me` | Authenticated | Returns the current user's ID, name, and email. |
 | `POST` | `/api/auth/logout` | Authenticated + antiforgery | Ends the current session. |
 
@@ -66,10 +75,14 @@ Unknown accounts, incorrect passwords, and locked accounts receive the same `Inv
 
 New accounts are locked for 15 minutes after five failed password attempts. The antiforgery-token, registration, and login routes share a fixed limit of ten requests per remote IP per minute and return HTTP 429 when that limit is exceeded.
 
+Google's callback is protected by the OAuth correlation cookie and `state` value rather than the form antiforgery header. Google start and linking routes use the authentication rate-limit policy. If Google credentials are absent, local authentication continues to work and Google routes return the user to the UI with a configuration message.
+
 ## Current Authorization Boundary
 
 Authentication proves which user owns the current cookie. Authorization currently protects only:
 
+- `GET /api/auth/google/link`
+- `GET /api/auth/google/link-complete`
 - `GET /api/auth/me`
 - `POST /api/auth/logout`
 
@@ -89,6 +102,10 @@ The account control has three visible states:
 
 Clicking the logged-out icon opens `/login`. Clicking the authenticated icon opens a menu containing the current user's name, email, and logout action. Registration is available at `/register`; its back action returns to login, while login's back action returns to the store.
 
+Login and registration also show **Continue with Google**. Authenticated password users can connect Google from the account menu, which then reports that Google is connected. See [`google-authentication-setup.md`](google-authentication-setup.md) for Google Cloud Console and secret-storage setup.
+
+After Google sign-in or linking, the storefront displays a centered notification for five seconds. Its non-sensitive `authStatus` or `authError` query parameter is removed from the current browser-history entry immediately, so refreshing or navigating back does not replay a stale notification.
+
 In development, browser console messages prefixed with `[Gaming Store auth]` report the current user and authentication outcomes. These messages are disabled in production and do not include passwords, cookies, or antiforgery tokens.
 
 ## Automated Verification
@@ -98,5 +115,7 @@ Backend coverage includes entity, service, controller, middleware, repository, I
 ```text
 antiforgery token -> registration -> Identity cookie -> current-user response
 ```
+
+Service integration coverage also verifies that a Google identity creates a passwordless local user and that a matching local email is not silently linked.
 
 The HTTP test uses SQLite in memory and ephemeral Data Protection keys so it is isolated from the development PostgreSQL database and Windows user profile.

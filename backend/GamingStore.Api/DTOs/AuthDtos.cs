@@ -16,6 +16,7 @@ public sealed record AuthenticatedUserResponse(
     Guid Id,
     string FirstName,
     string LastName,
-    string Email);
+    string Email,
+    bool GoogleConnected = false);
 
 public sealed record AntiforgeryTokenResponse(string Token);

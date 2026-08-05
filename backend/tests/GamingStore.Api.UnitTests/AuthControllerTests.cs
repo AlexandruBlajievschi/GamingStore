@@ -3,6 +3,7 @@ using GamingStore.Api.Controllers;
 using GamingStore.Api.DTOs;
 using GamingStore.Api.Services;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,11 +75,15 @@ public sealed class AuthControllerTests
     private static AuthController CreateController(out FakeAuthService service)
     {
         service = new FakeAuthService();
-        var services = new ServiceCollection()
+        var serviceCollection = new ServiceCollection()
             .AddLogging()
-            .AddAntiforgery()
-            .BuildServiceProvider();
-        var controller = new AuthController(service, services.GetRequiredService<IAntiforgery>());
+            .AddAntiforgery();
+        serviceCollection.AddAuthentication();
+        var services = serviceCollection.BuildServiceProvider();
+        var controller = new AuthController(
+            service,
+            services.GetRequiredService<IAntiforgery>(),
+            services.GetRequiredService<IAuthenticationSchemeProvider>());
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext
@@ -114,6 +119,27 @@ public sealed class AuthControllerTests
             CancellationToken cancellationToken)
         {
             return Task.FromResult(Response);
+        }
+
+        public AuthenticationProperties ConfigureExternalAuthenticationProperties(
+            string provider,
+            string redirectUrl,
+            ClaimsPrincipal? linkingUser = null)
+        {
+            return new AuthenticationProperties { RedirectUri = redirectUrl };
+        }
+
+        public Task<ExternalAuthenticationOutcome> CompleteExternalLoginAsync(
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(ExternalAuthenticationOutcome.Succeeded);
+        }
+
+        public Task<ExternalAuthenticationOutcome> LinkExternalLoginAsync(
+            ClaimsPrincipal principal,
+            CancellationToken cancellationToken)
+        {
+            return Task.FromResult(ExternalAuthenticationOutcome.Succeeded);
         }
 
         public Task LogoutAsync()

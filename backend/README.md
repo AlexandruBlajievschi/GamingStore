@@ -19,6 +19,11 @@ GET /api/health
 GET /api/auth/antiforgery-token
 POST /api/auth/register
 POST /api/auth/login
+GET /api/auth/google
+GET /api/auth/google/callback
+GET /api/auth/google/complete
+GET /api/auth/google/link
+GET /api/auth/google/link-complete
 GET /api/auth/me
 POST /api/auth/logout
 GET /api/games

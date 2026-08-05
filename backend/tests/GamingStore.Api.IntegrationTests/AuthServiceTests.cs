@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Security.Claims;
 using GamingStore.Api.Data;
 using GamingStore.Api.DTOs;
 using GamingStore.Api.Models;
@@ -80,6 +81,112 @@ public sealed class AuthServiceTests
 
         Assert.Equal("Invalid email or password.", unknownEmail.Message);
         Assert.Equal(unknownEmail.Message, wrongPassword.Message);
+    }
+
+    [Fact]
+    public async Task CompleteExternalLoginAsync_CreatesPasswordlessGoogleUserAndSignsIn()
+    {
+        await using var host = await AuthTestHost.CreateAsync();
+        var info = CreateGoogleLoginInfo(
+            "google-user-123",
+            "google.player@example.com",
+            "Google",
+            "Player");
+
+        var outcome = await ((AuthService)host.AuthService).CompleteExternalLoginAsync(
+            info,
+            CancellationToken.None);
+
+        Assert.Equal(ExternalAuthenticationOutcome.Succeeded, outcome);
+        var storedUser = await host.UserManager.FindByEmailAsync("google.player@example.com");
+        Assert.NotNull(storedUser);
+        Assert.True(storedUser.EmailConfirmed);
+        Assert.Null(storedUser.PasswordHash);
+        Assert.Equal(
+            storedUser.Id,
+            (await host.UserManager.FindByLoginAsync(GoogleAuthentication.Scheme, "google-user-123"))?.Id);
+        Assert.Contains(
+            host.HttpContext.Response.Headers.SetCookie,
+            value => value?.Contains("Identity.Application", StringComparison.Ordinal) == true);
+    }
+
+    [Fact]
+    public async Task CompleteExternalLoginAsync_DoesNotAutomaticallyLinkMatchingLocalEmail()
+    {
+        await using var host = await AuthTestHost.CreateAsync();
+        await host.AuthService.RegisterAsync(
+            new RegisterRequest(
+                "Local",
+                "Player",
+                "same.player@example.com",
+                "correct horse battery staple"),
+            CancellationToken.None);
+        var info = CreateGoogleLoginInfo(
+            "google-user-456",
+            "same.player@example.com",
+            "Local",
+            "Player");
+
+        var outcome = await ((AuthService)host.AuthService).CompleteExternalLoginAsync(
+            info,
+            CancellationToken.None);
+
+        Assert.Equal(ExternalAuthenticationOutcome.ExistingLocalAccount, outcome);
+        Assert.Null(await host.UserManager.FindByLoginAsync(
+            GoogleAuthentication.Scheme,
+            "google-user-456"));
+    }
+
+    [Fact]
+    public async Task LinkExternalLoginAsync_AttachesGoogleToAuthenticatedLocalUser()
+    {
+        await using var host = await AuthTestHost.CreateAsync();
+        var registered = await host.AuthService.RegisterAsync(
+            new RegisterRequest(
+                "Local",
+                "Player",
+                "linked.player@example.com",
+                "correct horse battery staple"),
+            CancellationToken.None);
+        var user = await host.UserManager.FindByIdAsync(registered.Id.ToString());
+        Assert.NotNull(user);
+        var info = CreateGoogleLoginInfo(
+            "google-user-789",
+            "different.google.email@example.com",
+            "Google",
+            "Player");
+
+        var outcome = await ((AuthService)host.AuthService).LinkExternalLoginAsync(
+            user,
+            info,
+            CancellationToken.None);
+
+        Assert.Equal(ExternalAuthenticationOutcome.Succeeded, outcome);
+        Assert.Equal(
+            user.Id,
+            (await host.UserManager.FindByLoginAsync(GoogleAuthentication.Scheme, "google-user-789"))?.Id);
+    }
+
+    private static ExternalLoginInfo CreateGoogleLoginInfo(
+        string providerKey,
+        string email,
+        string firstName,
+        string lastName)
+    {
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim(ClaimTypes.NameIdentifier, providerKey),
+            new Claim(ClaimTypes.Email, email),
+            new Claim(ClaimTypes.GivenName, firstName),
+            new Claim(ClaimTypes.Surname, lastName),
+            new Claim(GoogleAuthentication.EmailVerifiedClaim, bool.TrueString)
+        ], GoogleAuthentication.Scheme));
+
+        return new ExternalLoginInfo(
+            principal,
+            GoogleAuthentication.Scheme,
+            providerKey,
+            "Google");
     }
 
     private static int ReadIterationCount(string passwordHash)

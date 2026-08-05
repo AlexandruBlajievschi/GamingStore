@@ -1,10 +1,22 @@
 using System.Threading.RateLimiting;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
 const string frontendPolicy = "Frontend";
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' was not found.");
+var googleClientId = builder.Configuration["Authentication:Google:ClientId"];
+var googleClientSecret = builder.Configuration["Authentication:Google:ClientSecret"];
+var hasGoogleClientId = !string.IsNullOrWhiteSpace(googleClientId);
+var hasGoogleClientSecret = !string.IsNullOrWhiteSpace(googleClientSecret);
+
+if (hasGoogleClientId != hasGoogleClientSecret)
+{
+    throw new InvalidOperationException(
+        "Google authentication requires both Authentication:Google:ClientId and Authentication:Google:ClientSecret.");
+}
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddOpenApi();
@@ -26,6 +38,46 @@ builder.Services
     })
     .AddEntityFrameworkStores<ApplicationDbContext>()
     .AddDefaultTokenProviders();
+
+if (hasGoogleClientId && hasGoogleClientSecret)
+{
+    builder.Services
+        .AddAuthentication()
+        .AddGoogle(GoogleAuthentication.Scheme, options =>
+        {
+            options.ClientId = googleClientId!;
+            options.ClientSecret = googleClientSecret!;
+            options.CallbackPath = "/api/auth/google/callback";
+            options.SaveTokens = false;
+            options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+            options.CorrelationCookie.SecurePolicy = builder.Environment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
+            GoogleAuthentication.MapClaims(options);
+            options.Events.OnRemoteFailure = context =>
+            {
+                var accessWasDenied = context.Request.Query["error"] == "access_denied";
+                var isLinkFlow = context.Properties?.Items.TryGetValue(
+                        GoogleAuthentication.FlowProperty,
+                        out var flow)
+                    is true
+                    && flow == GoogleAuthentication.LinkFlow;
+                var redirectPath = isLinkFlow
+                    ? accessWasDenied
+                        ? "/?authError=google-link-denied"
+                        : "/?authError=google-link-failed"
+                    : accessWasDenied
+                        ? "/login?authError=google-denied"
+                        : "/login?authError=google-failed";
+
+                context.Response.Redirect(redirectPath);
+                context.HandleResponse();
+
+                return Task.CompletedTask;
+            };
+        });
+}
+
 builder.Services.Configure<PasswordHasherOptions>(options =>
     options.IterationCount = 220_000);
 builder.Services.ConfigureApplicationCookie(options =>
@@ -52,6 +104,12 @@ builder.Services.ConfigureApplicationCookie(options =>
     };
 });
 builder.Services.AddAuthorization();
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedFor
+        | ForwardedHeaders.XForwardedHost
+        | ForwardedHeaders.XForwardedProto;
+});
 builder.Services.AddAntiforgery(options =>
 {
     options.HeaderName = "X-CSRF-TOKEN";
@@ -98,6 +156,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders();
 
 if (app.Environment.IsDevelopment())
 {

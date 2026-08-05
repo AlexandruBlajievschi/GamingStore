@@ -85,6 +85,7 @@ export function AuthStatus() {
       await logout();
       logAuthEvent('Logout succeeded.');
       setUser(null);
+      router.replace('/');
       router.refresh();
     } catch (error) {
       setLogoutError('Could not log out. Please try again.');
@@ -135,6 +136,16 @@ export function AuthStatus() {
           </p>
           <p className="truncate text-sm text-slate-400">{user.email}</p>
         </div>
+        {user.googleConnected ? (
+          <p className="text-sm font-semibold text-emerald-300">Google connected</p>
+        ) : (
+          <a
+            className="grid h-10 place-items-center rounded-xl border border-white/15 px-3 text-sm font-bold text-white transition hover:border-cyan-300 hover:text-cyan-200"
+            href="/api/auth/google/link"
+          >
+            Connect Google
+          </a>
+        )}
         <button
           className="h-10 rounded-xl border border-white/15 px-3 text-sm font-bold text-white transition hover:border-rose-300 hover:text-rose-200 disabled:cursor-wait disabled:opacity-60"
           type="button"

@@ -26,9 +26,10 @@ Frontend work should use Nielsen's 10 usability heuristics as a design and revie
 
 ## Authentication and Authorization
 
-Gaming Store currently supports local email-and-password accounts through ASP.NET Core Identity. The Next.js frontend uses a same-origin API rewrite and an HttpOnly Identity cookie for browser sessions. Registration, login, account status, and logout are available through the storefront UI.
+Gaming Store supports local email-and-password accounts and Google authentication through ASP.NET Core Identity. The Next.js frontend uses a same-origin API rewrite and an HttpOnly Identity cookie for browser sessions. Registration, login, account status, Google account linking, and logout are available through the storefront UI.
 
 See [`docs/authentication.md`](docs/authentication.md) for the current routes, security settings, data model, UI behavior, and authorization boundary.
+See [`docs/google-authentication-setup.md`](docs/google-authentication-setup.md) for Google Cloud Console and secret configuration.
 
 ## Early Domain Notes
 
